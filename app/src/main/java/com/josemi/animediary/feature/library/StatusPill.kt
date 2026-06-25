@@ -1,6 +1,7 @@
 package com.josemi.animediary.feature.library
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -13,16 +14,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun StatusPill(label: String, color: Color, modifier: Modifier = Modifier) {
+fun StatusPill(
+    label: String,
+    color: Color,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Text(
         text = label,
-        color = Color(0xFF101116),
+        color = if (selected) Color(0xFF101116) else color,
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.Bold,
         modifier = modifier
             .clip(RoundedCornerShape(999.dp))
-            .background(color)
+            .background(if (selected) color else Color(0xFF262A35))
+            .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 7.dp)
     )
 }
-
