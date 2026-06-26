@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +22,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.josemi.animediary.core.ui.CoverImage
 import com.josemi.animediary.core.model.AnimePreview
+import com.josemi.animediary.core.ui.MangaColors
+import com.josemi.animediary.core.ui.MangaPanel
 
 @Composable
 fun AnimeCard(
@@ -31,14 +31,12 @@ fun AnimeCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    MangaPanel(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1D26))
     ) {
-        Column(modifier = Modifier.padding(10.dp)) {
+        Column {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -55,9 +53,9 @@ fun AnimeCard(
 
             Text(
                 text = anime.title,
-                color = Color.White,
+                color = MangaColors.Ink,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Black,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -70,27 +68,17 @@ fun AnimeCard(
             ) {
                 Text(
                     text = anime.rating,
-                    color = Color(0xFFFFE08A),
+                    color = MangaColors.Ink,
                     style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Black
                 )
                 Text(
                     text = anime.status.label,
-                    color = anime.status.color,
+                    color = MangaColors.MutedInk,
                     style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Black
                 )
             }
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = anime.note,
-                color = Color(0xFFB7BBC8),
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }

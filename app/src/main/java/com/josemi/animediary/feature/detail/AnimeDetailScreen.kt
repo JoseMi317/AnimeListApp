@@ -35,6 +35,11 @@ import com.josemi.animediary.core.database.GenreEntity
 import com.josemi.animediary.core.model.PersonalStatus
 import com.josemi.animediary.core.model.ReleaseStatus
 import com.josemi.animediary.core.ui.CoverImage
+import com.josemi.animediary.core.ui.MangaButton
+import com.josemi.animediary.core.ui.MangaColors
+import com.josemi.animediary.core.ui.MangaPanel
+import com.josemi.animediary.core.ui.MangaSectionTitle
+import com.josemi.animediary.core.ui.MangaTitleFont
 import com.josemi.animediary.ui.theme.AnimeDiaryTheme
 
 @Composable
@@ -68,7 +73,7 @@ fun AnimeDetailScreen(
 
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = Color(0xFF101116)
+        color = MangaColors.Paper
     ) {
         Column(
             modifier = Modifier
@@ -77,12 +82,8 @@ fun AnimeDetailScreen(
                 .padding(horizontal = 18.dp, vertical = 16.dp)
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onBackClick) {
-                    Text("Volver")
-                }
-                Button(onClick = onEditClick) {
-                    Text("Editar")
-                }
+                MangaButton(label = "< Volver", onClick = onBackClick)
+                MangaButton(label = "Editar", onClick = onEditClick)
                 OutlinedButton(onClick = { showDeleteDialog = true }) {
                     Text("Eliminar")
                 }
@@ -90,38 +91,41 @@ fun AnimeDetailScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(0.72f)
-                    .clip(RoundedCornerShape(14.dp))
-            ) {
-                CoverImage(
-                    coverPath = anime.coverPath,
-                    fallbackColor = Color(0xFF3B82F6)
-                )
+            MangaPanel {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(0.72f)
+                        .clip(RoundedCornerShape(6.dp))
+                ) {
+                    CoverImage(
+                        coverPath = anime.coverPath,
+                        fallbackColor = Color(0xFF3B82F6)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
                 text = anime.title,
-                color = Color.White,
+                color = MangaColors.Ink,
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontFamily = MangaTitleFont,
+                fontWeight = FontWeight.Black
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = "Personal: ${anime.personalStatus.label}",
-                color = Color(0xFFFFD166),
+                color = MangaColors.Ink,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Black
             )
             Text(
                 text = "Oficial: ${anime.releaseStatus.label}",
-                color = Color(0xFFB7BBC8),
+                color = MangaColors.SoftInk,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -143,7 +147,7 @@ fun AnimeDetailScreen(
 
             Text(
                 text = "Mi reseña",
-                color = Color.White,
+                color = MangaColors.Ink,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -152,7 +156,7 @@ fun AnimeDetailScreen(
 
             Text(
                 text = anime.review ?: "Sin reseña todavia.",
-                color = Color(0xFFB7BBC8),
+                color = MangaColors.SoftInk,
                 style = MaterialTheme.typography.bodyLarge
             )
 
@@ -160,7 +164,7 @@ fun AnimeDetailScreen(
 
             Text(
                 text = "Notas",
-                color = Color.White,
+                color = MangaColors.Ink,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -169,7 +173,7 @@ fun AnimeDetailScreen(
 
             Text(
                 text = anime.notes ?: "Sin notas adicionales.",
-                color = Color(0xFFB7BBC8),
+                color = MangaColors.SoftInk,
                 style = MaterialTheme.typography.bodyLarge
             )
         }
@@ -180,7 +184,7 @@ fun AnimeDetailScreen(
 private fun DetailLine(label: String, value: String?) {
     Text(
         text = "$label: ${value ?: "Pendiente"}",
-        color = Color(0xFFD7DAE5),
+        color = MangaColors.Ink,
         style = MaterialTheme.typography.bodyLarge
     )
 }

@@ -22,6 +22,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +44,12 @@ import com.josemi.animediary.core.image.copyCoverToInternalStorage
 import com.josemi.animediary.core.model.PersonalStatus
 import com.josemi.animediary.core.model.ReleaseStatus
 import com.josemi.animediary.core.ui.CoverImage
+import com.josemi.animediary.core.ui.MangaButton
+import com.josemi.animediary.core.ui.MangaChip
+import com.josemi.animediary.core.ui.MangaColors
+import com.josemi.animediary.core.ui.MangaPanel
+import com.josemi.animediary.core.ui.MangaSectionTitle
+import com.josemi.animediary.core.ui.MangaTitleFont
 import com.josemi.animediary.ui.theme.AnimeDiaryTheme
 
 @Composable
@@ -95,7 +102,7 @@ fun AnimeEditorScreen(
 
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = Color(0xFF101116)
+        color = MangaColors.Paper
     ) {
         Column(
             modifier = Modifier
@@ -103,17 +110,16 @@ fun AnimeEditorScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 18.dp, vertical = 16.dp)
         ) {
-            Button(onClick = onBackClick) {
-                Text("Volver")
-            }
+            MangaButton(label = "< Volver", onClick = onBackClick)
 
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
                 text = if (animeToEdit == null) "Nuevo anime" else "Editar anime",
-                color = Color.White,
+                color = MangaColors.Ink,
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontFamily = MangaTitleFont,
+                fontWeight = FontWeight.Black
             )
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -123,45 +129,46 @@ fun AnimeEditorScreen(
                 onValueChange = { title = it },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Titulo") },
-                singleLine = true
+                singleLine = true,
+                colors = mangaTextFieldColors()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(0.72f)
-                    .clip(RoundedCornerShape(14.dp))
-            ) {
-                CoverImage(
-                    coverPath = animeToEdit?.coverPath,
-                    coverUri = selectedCoverUri,
-                    fallbackColor = Color(0xFF3B82F6)
-                )
+            MangaPanel {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(0.72f)
+                        .clip(RoundedCornerShape(6.dp))
+                ) {
+                    CoverImage(
+                        coverPath = animeToEdit?.coverPath,
+                        coverUri = selectedCoverUri,
+                        fallbackColor = Color(0xFF3B82F6)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            Button(
+            MangaButton(
+                label = if (selectedCoverUri == null && animeToEdit?.coverPath == null) {
+                    "Elegir portada"
+                } else {
+                    "Cambiar portada"
+                },
                 onClick = {
                     coverPickerLauncher.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (selectedCoverUri == null && animeToEdit?.coverPath == null) "Elegir portada" else "Cambiar portada")
-            }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Estado personal",
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            MangaSectionTitle(text = "Estado personal")
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -178,12 +185,7 @@ fun AnimeEditorScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Estado oficial",
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            MangaSectionTitle(text = "Estado oficial")
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -200,12 +202,7 @@ fun AnimeEditorScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Generos",
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            MangaSectionTitle(text = "Generos")
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -233,7 +230,8 @@ fun AnimeEditorScreen(
                 onValueChange = { rating = it },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Puntuacion 0-10") },
-                singleLine = true
+                singleLine = true,
+                colors = mangaTextFieldColors()
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -255,7 +253,8 @@ fun AnimeEditorScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(110.dp),
-                label = { Text("Notas") }
+                label = { Text("Notas") },
+                colors = mangaTextFieldColors()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -279,7 +278,8 @@ fun AnimeEditorScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            Button(
+            MangaButton(
+                label = if (animeToEdit == null) "Guardar anime" else "Guardar cambios",
                 onClick = {
                     if (title.isBlank()) {
                         showMissingTitleDialog = true
@@ -321,13 +321,25 @@ fun AnimeEditorScreen(
                         onSaveAnime(savedAnime, selectedGenreIds)
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (animeToEdit == null) "Guardar anime" else "Guardar cambios")
-            }
+                modifier = Modifier.fillMaxWidth(),
+                filled = true
+            )
         }
     }
 }
+
+@Composable
+private fun mangaTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = MangaColors.Ink,
+    unfocusedTextColor = MangaColors.Ink,
+    focusedBorderColor = MangaColors.Ink,
+    unfocusedBorderColor = MangaColors.Ink,
+    focusedLabelColor = MangaColors.Ink,
+    unfocusedLabelColor = MangaColors.SoftInk,
+    cursorColor = MangaColors.Ink,
+    focusedContainerColor = MangaColors.Panel,
+    unfocusedContainerColor = MangaColors.Panel
+)
 
 private fun String.toRatingValueOrNull(): Double? {
     return trim()
@@ -343,17 +355,11 @@ private fun ChoicePill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Text(
-        text = label,
-        color = if (selected) Color(0xFF101116) else Color(0xFFD7DAE5),
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.Bold,
-        maxLines = 1,
+    MangaChip(
+        label = label,
+        selected = selected,
+        onClick = onClick,
         modifier = modifier
-            .clip(RoundedCornerShape(999.dp))
-            .background(if (selected) Color(0xFFFFD166) else Color(0xFF262A35))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 7.dp)
     )
 }
 

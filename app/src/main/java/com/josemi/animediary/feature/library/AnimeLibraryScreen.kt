@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,6 +33,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.josemi.animediary.core.model.AnimePreview
 import com.josemi.animediary.core.model.AnimeStatus
+import com.josemi.animediary.core.ui.MangaColors
+import com.josemi.animediary.core.ui.MangaSectionTitle
+import com.josemi.animediary.core.ui.MangaTitleFont
 import com.josemi.animediary.ui.theme.AnimeDiaryTheme
 
 private enum class RatingSort {
@@ -69,12 +73,12 @@ fun AnimeLibraryScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = Color(0xFF101116),
+        containerColor = MangaColors.Paper,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddAnimeClick,
-                containerColor = Color(0xFFFFD166),
-                contentColor = Color(0xFF101116)
+                containerColor = MangaColors.Ink,
+                contentColor = MangaColors.Panel
             ) {
                 Text(
                     text = "+",
@@ -88,7 +92,7 @@ fun AnimeLibraryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            color = Color(0xFF101116)
+            color = MangaColors.Paper
         ) {
             Column(
                 modifier = Modifier
@@ -97,13 +101,14 @@ fun AnimeLibraryScreen(
             ) {
                 Text(
                     text = "AnimeDiary",
-                    color = Color.White,
+                    color = MangaColors.Ink,
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
+                    fontFamily = MangaTitleFont,
+                    fontWeight = FontWeight.Black
                 )
                 Text(
-                    text = "Tu biblioteca personal",
-                    color = Color(0xFFB7BBC8),
+                    text = "Tu diario otaku",
+                    color = MangaColors.SoftInk,
                     style = MaterialTheme.typography.bodyMedium
                 )
 
@@ -114,7 +119,18 @@ fun AnimeLibraryScreen(
                     onValueChange = { newValue -> searchQuery = newValue },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    label = { Text("Buscar anime") }
+                    label = { Text("Buscar anime") },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MangaColors.Ink,
+                        unfocusedTextColor = MangaColors.Ink,
+                        focusedBorderColor = MangaColors.Ink,
+                        unfocusedBorderColor = MangaColors.Ink,
+                        focusedLabelColor = MangaColors.Ink,
+                        unfocusedLabelColor = MangaColors.SoftInk,
+                        cursorColor = MangaColors.Ink,
+                        focusedContainerColor = MangaColors.Panel,
+                        unfocusedContainerColor = MangaColors.Panel
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -169,9 +185,9 @@ fun AnimeLibraryScreen(
 
                 Text(
                     text = "${visibleAnime.size} animes en total",
-                    color = Color(0xFFD7DAE5),
+                    color = MangaColors.Ink,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Black
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -234,9 +250,9 @@ private fun EmptyLibraryMessage(
     ) {
         Text(
             text = if (hasAnyAnime) "No encontre coincidencias" else "Aun no tienes animes registrados",
-            color = Color.White,
+            color = MangaColors.Ink,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Black
         )
         Text(
             text = if (hasAnyAnime) {
@@ -244,7 +260,7 @@ private fun EmptyLibraryMessage(
             } else {
                 "Toca + para agregar el anime que estas empezando."
             },
-            color = Color(0xFFB7BBC8),
+            color = MangaColors.SoftInk,
             style = MaterialTheme.typography.bodyMedium
         )
     }
