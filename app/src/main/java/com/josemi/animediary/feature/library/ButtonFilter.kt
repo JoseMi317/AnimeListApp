@@ -14,10 +14,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun StatusPill(
+fun ButtonFilter(
     label: String,
-    color: Color,
     selected: Boolean,
+    color: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -28,7 +28,7 @@ fun StatusPill(
         fontWeight = FontWeight.Bold,
         maxLines = 1,
         modifier = modifier
-            .clip(RoundedCornerShape(999.dp))
+            .clip(RoundedCornerShape(10000.dp))
             .background(if (selected) color else Color(0xFF262A35))
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 7.dp)

@@ -1,6 +1,6 @@
 package com.josemi.animediary.feature.library
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,12 +22,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.josemi.animediary.core.ui.CoverImage
 import com.josemi.animediary.core.model.AnimePreview
 
 @Composable
-fun AnimeCard(anime: AnimePreview, modifier: Modifier = Modifier) {
+fun AnimeCard(
+    anime: AnimePreview,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1D26))
     ) {
@@ -37,8 +44,12 @@ fun AnimeCard(anime: AnimePreview, modifier: Modifier = Modifier) {
                     .fillMaxWidth()
                     .aspectRatio(0.72f)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(anime.posterColor)
-            )
+            ) {
+                CoverImage(
+                    coverPath = anime.coverPath,
+                    fallbackColor = anime.posterColor
+                )
+            }
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -83,4 +94,3 @@ fun AnimeCard(anime: AnimePreview, modifier: Modifier = Modifier) {
         }
     }
 }
-

@@ -3,7 +3,9 @@ package com.josemi.animediary.feature.library
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,30 +30,49 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.josemi.animediary.core.model.AnimePreview
 import com.josemi.animediary.core.model.AnimeStatus
 import com.josemi.animediary.ui.theme.AnimeDiaryTheme
 
+private enum class RatingSort {
+    HighestFirst,
+    LowestFirst
+}
+
 @Composable
-fun AnimeLibraryScreen(modifier: Modifier = Modifier) {
+fun AnimeLibraryScreen(
+    animeList: List<AnimePreview>,
+    onAddAnimeClick: () -> Unit,
+    onAnimeClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedStatus by remember { mutableStateOf<AnimeStatus?>(null) }
+    var ratingSort by remember { mutableStateOf(RatingSort.HighestFirst) }
 
-    val visibleAnime = sampleAnime.filter { anime ->
-        val matchesSearch = anime.title.contains(searchQuery, ignoreCase = true) ||
-            anime.note.contains(searchQuery, ignoreCase = true) ||
-            anime.status.label.contains(searchQuery, ignoreCase = true)
+    val visibleAnime = animeList
+        .filter { anime ->
+            val matchesSearch = anime.title.contains(searchQuery, ignoreCase = true) ||
+                anime.note.contains(searchQuery, ignoreCase = true) ||
+                anime.status.label.contains(searchQuery, ignoreCase = true)
 
-        val matchesStatus = selectedStatus == null || anime.status == selectedStatus
+            val matchesStatus = selectedStatus == null || anime.status == selectedStatus
 
-        matchesSearch && matchesStatus
-    }
+            matchesSearch && matchesStatus
+        }
+        .let { filteredAnime ->
+            when (ratingSort) {
+                RatingSort.HighestFirst -> filteredAnime.sortedByDescending { it.ratingValue ?: -1.0 }
+                RatingSort.LowestFirst -> filteredAnime.sortedBy { it.ratingValue ?: Double.MAX_VALUE }
+            }
+        }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = Color(0xFF101116),
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { },
+                onClick = onAddAnimeClick,
                 containerColor = Color(0xFFFFD166),
                 contentColor = Color(0xFF101116)
             ) {
@@ -98,7 +119,10 @@ fun AnimeLibraryScreen(modifier: Modifier = Modifier) {
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     item {
                         StatusPill(
                             label = "Todos",
@@ -144,22 +168,54 @@ fun AnimeLibraryScreen(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(18.dp))
 
                 Text(
-                    text = "${visibleAnime.size} entradas encontradas",
+                    text = "${visibleAnime.size} animes en total",
                     color = Color(0xFFD7DAE5),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
 
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ButtonFilter(
+                        label = "Mayor nota",
+                        selected = ratingSort == RatingSort.HighestFirst,
+                        color = Color(0xFFE5E7EB),
+                        onClick = { ratingSort = RatingSort.HighestFirst }
+                    )
+                    ButtonFilter(
+                        label = "Menor nota",
+                        selected = ratingSort == RatingSort.LowestFirst,
+                        color = Color(0xFFE5E7EB),
+                        onClick = { ratingSort = RatingSort.LowestFirst }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(12.dp))
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(bottom = 88.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    items(visibleAnime) { anime ->
-                        AnimeCard(anime = anime)
+                if (visibleAnime.isEmpty()) {
+                    EmptyLibraryMessage(
+                        hasAnyAnime = animeList.isNotEmpty(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                    )
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(bottom = 88.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        items(visibleAnime) { anime ->
+                            AnimeCard(
+                                anime = anime,
+                                onClick = { onAnimeClick(anime.id) }
+                            )
+                        }
                     }
                 }
             }
@@ -167,10 +223,41 @@ fun AnimeLibraryScreen(modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+private fun EmptyLibraryMessage(
+    hasAnyAnime: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(top = 48.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = if (hasAnyAnime) "No encontre coincidencias" else "Aun no tienes animes registrados",
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = if (hasAnyAnime) {
+                "Prueba cambiar la busqueda o el filtro."
+            } else {
+                "Toca + para agregar el anime que estas empezando."
+            },
+            color = Color(0xFFB7BBC8),
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun AnimeLibraryPreview() {
     AnimeDiaryTheme {
-        AnimeLibraryScreen()
+        AnimeLibraryScreen(
+            animeList = sampleAnime,
+            onAddAnimeClick = {},
+            onAnimeClick = {}
+        )
     }
 }
