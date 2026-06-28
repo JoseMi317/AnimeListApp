@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [AnimeEntity::class, GenreEntity::class, AnimeGenreCrossRef::class],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -28,7 +28,7 @@ abstract class AnimeDatabase : RoomDatabase() {
                     AnimeDatabase::class.java,
                     "anime_diary.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                     .also { instance = it }
             }
@@ -63,6 +63,15 @@ abstract class AnimeDatabase : RoomDatabase() {
                 )
                 db.execSQL(
                     "CREATE INDEX IF NOT EXISTS `index_anime_genre_genreId` ON `anime_genre` (`genreId`)"
+                )
+            }
+        }
+
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `anime` ADD COLUMN `customRatingLabel` TEXT")
+                db.execSQL(
+                    "ALTER TABLE `anime` ADD COLUMN `ratingLabelMode` TEXT NOT NULL DEFAULT 'Auto'"
                 )
             }
         }

@@ -45,7 +45,7 @@ fun AnimeCard(
             ) {
                 CoverImage(
                     coverPath = anime.coverPath,
-                    fallbackColor = anime.posterColor
+                    fallbackColor = MangaColors.Highlight
                 )
             }
 

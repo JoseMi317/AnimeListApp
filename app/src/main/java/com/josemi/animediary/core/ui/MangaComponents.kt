@@ -6,16 +6,23 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 object MangaColors {
@@ -78,22 +85,41 @@ fun MangaButton(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    filled: Boolean = false
+    filled: Boolean = false,
+    iconRes: Int? = null
 ) {
-    Text(
-        text = label,
-        color = if (filled) MangaColors.Panel else MangaColors.Ink,
-        style = MaterialTheme.typography.titleSmall,
-        fontFamily = MangaSectionFont,
-        fontWeight = FontWeight.ExtraBold,
-        maxLines = 1,
+    val contentColor = if (filled) MangaColors.Panel else MangaColors.Ink
+
+    Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(if (filled) MangaColors.Ink else MangaColors.Panel)
             .border(2.dp, MangaColors.Ink, RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 11.dp)
-    )
+            .padding(horizontal = 16.dp, vertical = 11.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (iconRes != null) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier
+                    .padding(end = 7.dp)
+                    .size(18.dp)
+            )
+        }
+        Text(
+            text = label,
+            color = contentColor,
+            style = MaterialTheme.typography.titleSmall,
+            fontFamily = MangaSectionFont,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Center,
+            maxLines = 1
+        )
+    }
 }
 
 @Composable
@@ -111,5 +137,20 @@ fun MangaSectionTitle(
             .clip(RoundedCornerShape(2.dp))
             .background(MangaColors.Ink)
             .padding(horizontal = 12.dp, vertical = 5.dp)
+    )
+}
+
+@Composable
+fun MangaFieldTitle(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text.uppercase(),
+        color = MangaColors.Ink,
+        style = MaterialTheme.typography.titleMedium,
+        fontFamily = MangaSectionFont,
+        fontWeight = FontWeight.Black,
+        modifier = modifier.padding(horizontal = 2.dp, vertical = 2.dp)
     )
 }

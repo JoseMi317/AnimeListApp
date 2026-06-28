@@ -14,11 +14,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,12 +27,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.josemi.animediary.core.model.AnimePreview
 import com.josemi.animediary.core.model.AnimeStatus
 import com.josemi.animediary.core.ui.MangaColors
-import com.josemi.animediary.core.ui.MangaSectionTitle
+import com.josemi.animediary.core.ui.MangaScreenBackground
 import com.josemi.animediary.core.ui.MangaTitleFont
 import com.josemi.animediary.ui.theme.AnimeDiaryTheme
 
@@ -46,7 +45,6 @@ private enum class RatingSort {
 @Composable
 fun AnimeLibraryScreen(
     animeList: List<AnimePreview>,
-    onAddAnimeClick: () -> Unit,
     onAnimeClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -71,45 +69,20 @@ fun AnimeLibraryScreen(
             }
         }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = MangaColors.Paper,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddAnimeClick,
-                containerColor = MangaColors.Ink,
-                contentColor = MangaColors.Panel
-            ) {
-                Text(
-                    text = "+",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    ) { innerPadding ->
-        Surface(
+    MangaScreenBackground(modifier = modifier) {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            color = MangaColors.Paper
+                .padding(horizontal = 18.dp, vertical = 16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 18.dp, vertical = 16.dp)
-            ) {
                 Text(
                     text = "AnimeDiary",
                     color = MangaColors.Ink,
                     style = MaterialTheme.typography.headlineMedium,
                     fontFamily = MangaTitleFont,
-                    fontWeight = FontWeight.Black
-                )
-                Text(
-                    text = "Tu diario otaku",
-                    color = MangaColors.SoftInk,
-                    style = MaterialTheme.typography.bodyMedium
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(18.dp))
@@ -222,7 +195,7 @@ fun AnimeLibraryScreen(
                 } else {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(bottom = 88.dp),
+                        contentPadding = PaddingValues(bottom = 120.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
@@ -235,7 +208,6 @@ fun AnimeLibraryScreen(
                     }
                 }
             }
-        }
     }
 }
 
@@ -258,7 +230,7 @@ private fun EmptyLibraryMessage(
             text = if (hasAnyAnime) {
                 "Prueba cambiar la busqueda o el filtro."
             } else {
-                "Toca + para agregar el anime que estas empezando."
+                "Toca Nuevo para agregar el anime que estas empezando."
             },
             color = MangaColors.SoftInk,
             style = MaterialTheme.typography.bodyMedium
@@ -272,7 +244,6 @@ fun AnimeLibraryPreview() {
     AnimeDiaryTheme {
         AnimeLibraryScreen(
             animeList = sampleAnime,
-            onAddAnimeClick = {},
             onAnimeClick = {}
         )
     }

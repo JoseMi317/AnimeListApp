@@ -3,6 +3,7 @@ package com.josemi.animediary.core.database
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.josemi.animediary.core.model.PersonalStatus
+import com.josemi.animediary.core.model.RatingLabelMode
 import com.josemi.animediary.core.model.ReleaseStatus
 
 @Entity(tableName = "anime")
@@ -14,6 +15,8 @@ data class AnimeEntity(
     val personalStatus: PersonalStatus = PersonalStatus.Starting,
     val releaseStatus: ReleaseStatus = ReleaseStatus.Unknown,
     val ratingValue: Double? = null,
+    val customRatingLabel: String? = null,
+    val ratingLabelMode: RatingLabelMode = RatingLabelMode.Auto,
     val review: String? = null,
     val episodesWatched: Int = 0,
     val totalEpisodes: Int? = null,
@@ -28,4 +31,3 @@ data class AnimeEntity(
     val coverPath: String? = null,
     val notes: String? = null
 )
-

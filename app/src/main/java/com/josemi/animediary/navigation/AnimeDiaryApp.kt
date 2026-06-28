@@ -1,5 +1,21 @@
 package com.josemi.animediary.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -8,12 +24,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.josemi.animediary.R
 import com.josemi.animediary.core.data.AnimeRepository
 import com.josemi.animediary.core.data.toPreview
 import com.josemi.animediary.core.database.AnimeDatabase
 import com.josemi.animediary.core.image.deleteInternalCover
+import com.josemi.animediary.core.ui.MangaColors
+import com.josemi.animediary.core.ui.MangaPanel
+import com.josemi.animediary.core.ui.MangaScreenBackground
+import com.josemi.animediary.core.ui.MangaSectionFont
+import com.josemi.animediary.core.ui.MangaTitleFont
 import com.josemi.animediary.feature.detail.AnimeDetailScreen
 import com.josemi.animediary.feature.editor.AnimeEditorScreen
 import com.josemi.animediary.feature.library.AnimeLibraryScreen
@@ -22,8 +49,17 @@ import kotlinx.coroutines.launch
 private sealed interface AnimeDiaryScreen {
     data object Library : AnimeDiaryScreen
     data object NewAnime : AnimeDiaryScreen
+    data object Stats : AnimeDiaryScreen
+    data object Settings : AnimeDiaryScreen
     data class Detail(val animeId: Int) : AnimeDiaryScreen
     data class EditAnime(val animeId: Int) : AnimeDiaryScreen
+}
+
+private enum class MainTab(val label: String, val iconRes: Int) {
+    Library("Biblioteca", R.drawable.ic_manga_star),
+    NewAnime("Nuevo", R.drawable.ic_manga_plus),
+    Stats("Stats", R.drawable.ic_manga_stats),
+    Settings("Ajustes", R.drawable.ic_manga_settings)
 }
 
 @Composable
@@ -44,13 +80,13 @@ fun AnimeDiaryApp(modifier: Modifier = Modifier) {
         repository.ensureDefaultGenres()
     }
 
-    when (val screen = currentScreen) {
+    Box(modifier = modifier.fillMaxSize()) {
+        when (val screen = currentScreen) {
         AnimeDiaryScreen.Library -> {
             AnimeLibraryScreen(
                 animeList = animeList,
-                onAddAnimeClick = { currentScreen = AnimeDiaryScreen.NewAnime },
                 onAnimeClick = { animeId -> currentScreen = AnimeDiaryScreen.Detail(animeId) },
-                modifier = modifier
+                modifier = Modifier.fillMaxSize()
             )
         }
 
@@ -65,7 +101,23 @@ fun AnimeDiaryApp(modifier: Modifier = Modifier) {
                     }
                 },
                 availableGenres = availableGenres,
-                modifier = modifier
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        AnimeDiaryScreen.Stats -> {
+            PlaceholderScreen(
+                title = "Stats",
+                message = "Aqui van a vivir tus rankings, promedios y generos mas vistos.",
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        AnimeDiaryScreen.Settings -> {
+            PlaceholderScreen(
+                title = "Ajustes",
+                message = "Aqui pondremos respaldo, tema, exportacion e importacion.",
+                modifier = Modifier.fillMaxSize()
             )
         }
 
@@ -90,7 +142,7 @@ fun AnimeDiaryApp(modifier: Modifier = Modifier) {
                         }
                     },
                     genres = selectedGenres,
-                    modifier = modifier
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
@@ -116,9 +168,141 @@ fun AnimeDiaryApp(modifier: Modifier = Modifier) {
                     },
                     availableGenres = availableGenres,
                     initialSelectedGenreIds = selectedGenreIds.toSet(),
-                    modifier = modifier
+                    modifier = Modifier.fillMaxSize()
                 )
             }
+        }
+    }
+
+        val selectedTab = currentScreen.toMainTab()
+        if (selectedTab != null) {
+            MangaBottomNav(
+                selectedTab = selectedTab,
+                onTabSelected = { tab ->
+                    currentScreen = when (tab) {
+                        MainTab.Library -> AnimeDiaryScreen.Library
+                        MainTab.NewAnime -> AnimeDiaryScreen.NewAnime
+                        MainTab.Stats -> AnimeDiaryScreen.Stats
+                        MainTab.Settings -> AnimeDiaryScreen.Settings
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+            )
+        }
+    }
+}
+
+private fun AnimeDiaryScreen.toMainTab(): MainTab? {
+    return when (this) {
+        AnimeDiaryScreen.Library -> MainTab.Library
+        AnimeDiaryScreen.NewAnime -> MainTab.NewAnime
+        AnimeDiaryScreen.Stats -> MainTab.Stats
+        AnimeDiaryScreen.Settings -> MainTab.Settings
+        is AnimeDiaryScreen.Detail -> null
+        is AnimeDiaryScreen.EditAnime -> null
+    }
+}
+
+@Composable
+private fun MangaBottomNav(
+    selectedTab: MainTab,
+    onTabSelected: (MainTab) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    MangaPanel(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(6.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            MainTab.entries.forEach { tab ->
+                MangaNavItem(
+                    tab = tab,
+                    selected = selectedTab == tab,
+                    onClick = { onTabSelected(tab) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MangaNavItem(
+    tab: MainTab,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .background(
+                color = if (selected) MangaColors.Ink else MangaColors.Panel,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .border(2.dp, MangaColors.Ink, RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 7.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            painter = painterResource(tab.iconRes),
+            contentDescription = tab.label,
+            tint = if (selected) MangaColors.Panel else MangaColors.Ink,
+            modifier = Modifier.size(21.dp)
+        )
+        Text(
+            text = tab.label,
+            color = if (selected) MangaColors.Panel else MangaColors.Ink,
+            style = MaterialTheme.typography.labelSmall,
+            fontFamily = MangaSectionFont,
+            fontWeight = FontWeight.Black,
+            textAlign = TextAlign.Center,
+            maxLines = 1
+        )
+    }
+}
+
+@Composable
+private fun PlaceholderScreen(
+    title: String,
+    message: String,
+    modifier: Modifier = Modifier
+) {
+    MangaScreenBackground(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp, vertical = 16.dp)
+                .padding(bottom = 110.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
+            Text(
+                text = title,
+                color = MangaColors.Ink,
+                style = MaterialTheme.typography.headlineMedium,
+                fontFamily = MangaTitleFont,
+                fontWeight = FontWeight.Black
+            )
+            MangaPanel {
+                Text(
+                    text = message,
+                    color = MangaColors.SoftInk,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Text(
+                text = "Proximamente",
+                color = MangaColors.Ink,
+                style = MaterialTheme.typography.titleLarge,
+                fontFamily = MangaSectionFont,
+                fontWeight = FontWeight.Black
+            )
         }
     }
 }

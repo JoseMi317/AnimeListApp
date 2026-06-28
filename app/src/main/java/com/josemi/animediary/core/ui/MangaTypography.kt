@@ -6,3 +6,4 @@ import com.josemi.animediary.R
 
 val MangaTitleFont = FontFamily(Font(R.font.permanent_marker_regular))
 val MangaSectionFont = FontFamily(Font(R.font.bangers_regular))
+val MangaInputFont = FontFamily(Font(R.font.kaushan_script_regular))

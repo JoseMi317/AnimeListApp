@@ -2,6 +2,7 @@ package com.josemi.animediary.core.database
 
 import androidx.room.TypeConverter
 import com.josemi.animediary.core.model.PersonalStatus
+import com.josemi.animediary.core.model.RatingLabelMode
 import com.josemi.animediary.core.model.ReleaseStatus
 
 class Converters {
@@ -16,5 +17,10 @@ class Converters {
 
     @TypeConverter
     fun stringToReleaseStatus(value: String): ReleaseStatus = ReleaseStatus.valueOf(value)
-}
 
+    @TypeConverter
+    fun ratingLabelModeToString(value: RatingLabelMode): String = value.name
+
+    @TypeConverter
+    fun stringToRatingLabelMode(value: String): RatingLabelMode = RatingLabelMode.valueOf(value)
+}
