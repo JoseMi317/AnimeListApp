@@ -49,6 +49,15 @@ interface AnimeDao {
     )
     suspend fun getGenreNamesForAnime(animeId: Int): List<String>
 
+    @Query(
+        """
+        SELECT genre.name FROM genre
+        INNER JOIN anime_genre ON genre.id = anime_genre.genreId
+        ORDER BY genre.name ASC
+        """
+    )
+    fun observeUsedGenreNames(): Flow<List<String>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(anime: AnimeEntity): Long
 

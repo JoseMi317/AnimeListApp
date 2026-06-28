@@ -1,6 +1,7 @@
 package com.josemi.animediary.navigation
 
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,6 +48,7 @@ import com.josemi.animediary.feature.detail.AnimeDetailScreen
 import com.josemi.animediary.feature.editor.AnimeEditorScreen
 import com.josemi.animediary.feature.library.AnimeLibraryScreen
 import com.josemi.animediary.feature.settings.SettingsScreen
+import com.josemi.animediary.feature.stats.StatsScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -81,6 +83,7 @@ fun AnimeDiaryApp(modifier: Modifier = Modifier) {
     val coroutineScope = rememberCoroutineScope()
     val storedAnime by repository.observeAllAnime().collectAsState(initial = emptyList())
     val availableGenres by repository.observeAllGenres().collectAsState(initial = emptyList())
+    val usedGenreNames by repository.observeUsedGenreNames().collectAsState(initial = emptyList())
     val animeList = storedAnime.map { it.toPreview() }
     var pendingExportJson by remember { mutableStateOf<String?>(null) }
     var backupMessage by remember { mutableStateOf<String?>(null) }
@@ -140,6 +143,10 @@ fun AnimeDiaryApp(modifier: Modifier = Modifier) {
         repository.ensureDefaultGenres()
     }
 
+    BackHandler(enabled = currentScreen !is AnimeDiaryScreen.Library) {
+        currentScreen = currentScreen.backDestination()
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         when (val screen = currentScreen) {
         AnimeDiaryScreen.Library -> {
@@ -166,9 +173,9 @@ fun AnimeDiaryApp(modifier: Modifier = Modifier) {
         }
 
         AnimeDiaryScreen.Stats -> {
-            PlaceholderScreen(
-                title = "Stats",
-                message = "Aqui van a vivir tus rankings, promedios y generos mas vistos.",
+            StatsScreen(
+                animeList = storedAnime,
+                usedGenreNames = usedGenreNames,
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -280,6 +287,17 @@ private fun AnimeDiaryScreen.toMainTab(): MainTab? {
         AnimeDiaryScreen.Settings -> MainTab.Settings
         is AnimeDiaryScreen.Detail -> null
         is AnimeDiaryScreen.EditAnime -> null
+    }
+}
+
+private fun AnimeDiaryScreen.backDestination(): AnimeDiaryScreen {
+    return when (this) {
+        AnimeDiaryScreen.Library -> AnimeDiaryScreen.Library
+        AnimeDiaryScreen.NewAnime -> AnimeDiaryScreen.Library
+        AnimeDiaryScreen.Stats -> AnimeDiaryScreen.Library
+        AnimeDiaryScreen.Settings -> AnimeDiaryScreen.Library
+        is AnimeDiaryScreen.Detail -> AnimeDiaryScreen.Library
+        is AnimeDiaryScreen.EditAnime -> AnimeDiaryScreen.Detail(animeId)
     }
 }
 

@@ -22,6 +22,8 @@ class AnimeRepository(
     fun observeGenreIdsForAnime(animeId: Int): Flow<List<Int>> =
         animeDao.observeGenreIdsForAnime(animeId)
 
+    fun observeUsedGenreNames(): Flow<List<String>> = animeDao.observeUsedGenreNames()
+
     suspend fun ensureDefaultGenres() {
         animeDao.insertGenres(defaultAnimeGenres.map { name -> GenreEntity(name = name) })
     }

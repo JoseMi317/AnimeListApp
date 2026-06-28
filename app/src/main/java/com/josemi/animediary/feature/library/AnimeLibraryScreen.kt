@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.josemi.animediary.R
@@ -39,8 +38,6 @@ import com.josemi.animediary.core.ui.MangaColors
 import com.josemi.animediary.core.ui.MangaInputFont
 import com.josemi.animediary.core.ui.MangaPanel
 import com.josemi.animediary.core.ui.MangaScreenBackground
-import com.josemi.animediary.core.ui.MangaSectionFont
-import com.josemi.animediary.core.ui.MangaTitleFont
 import com.josemi.animediary.ui.theme.AnimeDiaryTheme
 
 private enum class RatingSort {
@@ -81,10 +78,6 @@ fun AnimeLibraryScreen(
                 .fillMaxSize()
                 .padding(horizontal = 18.dp, vertical = 16.dp)
         ) {
-                LibraryHeader()
-
-                Spacer(modifier = Modifier.height(14.dp))
-
                 MangaSearchField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it }
@@ -187,24 +180,6 @@ fun AnimeLibraryScreen(
                     }
                 }
             }
-    }
-}
-
-@Composable
-private fun LibraryHeader(modifier: Modifier = Modifier) {
-    MangaPanel(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)
-    ) {
-        Text(
-            text = "AnimeDiary",
-            color = MangaColors.Ink,
-            style = MaterialTheme.typography.headlineLarge,
-            fontFamily = MangaTitleFont,
-            fontWeight = FontWeight.Black,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
     }
 }
 
