@@ -1,5 +1,7 @@
 package com.josemi.animediary.navigation
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,7 +46,12 @@ import com.josemi.animediary.core.ui.MangaTitleFont
 import com.josemi.animediary.feature.detail.AnimeDetailScreen
 import com.josemi.animediary.feature.editor.AnimeEditorScreen
 import com.josemi.animediary.feature.library.AnimeLibraryScreen
+import com.josemi.animediary.feature.settings.SettingsScreen
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 private sealed interface AnimeDiaryScreen {
     data object Library : AnimeDiaryScreen
@@ -75,6 +82,59 @@ fun AnimeDiaryApp(modifier: Modifier = Modifier) {
     val storedAnime by repository.observeAllAnime().collectAsState(initial = emptyList())
     val availableGenres by repository.observeAllGenres().collectAsState(initial = emptyList())
     val animeList = storedAnime.map { it.toPreview() }
+    var pendingExportJson by remember { mutableStateOf<String?>(null) }
+    var backupMessage by remember { mutableStateOf<String?>(null) }
+    val backupFileFormatter = remember { DateTimeFormatter.ofPattern("yyyyMMdd_HHmm") }
+    val exportBackupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        val json = pendingExportJson
+        pendingExportJson = null
+
+        if (uri == null || json == null) {
+            backupMessage = "Exportacion cancelada."
+            return@rememberLauncherForActivityResult
+        }
+
+        coroutineScope.launch {
+            val result = runCatching {
+                withContext(Dispatchers.IO) {
+                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        outputStream.write(json.toByteArray(Charsets.UTF_8))
+                    } ?: error("No se pudo abrir el archivo.")
+                }
+            }
+
+            backupMessage = if (result.isSuccess) {
+                "Respaldo exportado correctamente."
+            } else {
+                "No se pudo exportar el respaldo."
+            }
+        }
+    }
+    val importBackupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri == null) {
+            backupMessage = "Importacion cancelada."
+            return@rememberLauncherForActivityResult
+        }
+
+        coroutineScope.launch {
+            val result = runCatching {
+                val json = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                        ?: error("No se pudo abrir el respaldo.")
+                }
+                repository.importBackupJson(json)
+            }
+
+            backupMessage = result.fold(
+                onSuccess = { importedCount -> "Importados $importedCount animes desde el respaldo." },
+                onFailure = { "No se pudo importar el respaldo. Revisa que sea un JSON valido de AnimeDiary." }
+            )
+        }
+    }
 
     LaunchedEffect(repository) {
         repository.ensureDefaultGenres()
@@ -114,9 +174,27 @@ fun AnimeDiaryApp(modifier: Modifier = Modifier) {
         }
 
         AnimeDiaryScreen.Settings -> {
-            PlaceholderScreen(
-                title = "Ajustes",
-                message = "Aqui pondremos respaldo, tema, exportacion e importacion.",
+            SettingsScreen(
+                animeCount = storedAnime.size,
+                backupMessage = backupMessage,
+                onExportClick = {
+                    coroutineScope.launch {
+                        val result = runCatching { repository.exportBackupJson() }
+                        result.fold(
+                            onSuccess = { json ->
+                                pendingExportJson = json
+                                val timestamp = LocalDateTime.now().format(backupFileFormatter)
+                                exportBackupLauncher.launch("animediary_backup_$timestamp.json")
+                            },
+                            onFailure = {
+                                backupMessage = "No se pudo preparar el respaldo."
+                            }
+                        )
+                    }
+                },
+                onImportClick = {
+                    importBackupLauncher.launch(arrayOf("application/json", "text/*", "*/*"))
+                },
                 modifier = Modifier.fillMaxSize()
             )
         }

@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
@@ -13,11 +14,17 @@ interface AnimeDao {
     @Query("SELECT * FROM anime ORDER BY updatedAt DESC")
     fun observeAll(): Flow<List<AnimeEntity>>
 
+    @Query("SELECT * FROM anime ORDER BY updatedAt DESC")
+    suspend fun getAll(): List<AnimeEntity>
+
     @Query("SELECT * FROM anime WHERE id = :id")
     fun observeById(id: Int): Flow<AnimeEntity?>
 
     @Query("SELECT * FROM genre ORDER BY name ASC")
     fun observeAllGenres(): Flow<List<GenreEntity>>
+
+    @Query("SELECT * FROM genre ORDER BY name ASC")
+    suspend fun getAllGenres(): List<GenreEntity>
 
     @Query(
         """
@@ -31,6 +38,16 @@ interface AnimeDao {
 
     @Query("SELECT genreId FROM anime_genre WHERE animeId = :animeId")
     fun observeGenreIdsForAnime(animeId: Int): Flow<List<Int>>
+
+    @Query(
+        """
+        SELECT genre.name FROM genre
+        INNER JOIN anime_genre ON genre.id = anime_genre.genreId
+        WHERE anime_genre.animeId = :animeId
+        ORDER BY genre.name ASC
+        """
+    )
+    suspend fun getGenreNamesForAnime(animeId: Int): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(anime: AnimeEntity): Long
@@ -49,4 +66,13 @@ interface AnimeDao {
 
     @Query("DELETE FROM anime_genre WHERE animeId = :animeId")
     suspend fun deleteGenresForAnime(animeId: Int)
+
+    @Query("DELETE FROM anime")
+    suspend fun deleteAllAnime()
+
+    @Transaction
+    suspend fun replaceAllAnime(anime: List<AnimeEntity>) {
+        deleteAllAnime()
+        anime.forEach { insert(it) }
+    }
 }

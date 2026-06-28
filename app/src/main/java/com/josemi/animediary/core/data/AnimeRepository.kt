@@ -48,4 +48,40 @@ class AnimeRepository(
             }
         )
     }
+
+    suspend fun exportBackupJson(now: Long = System.currentTimeMillis()): String {
+        val entries = animeDao.getAll().map { anime ->
+            AnimeBackupEntry(
+                anime = anime,
+                genreNames = animeDao.getGenreNamesForAnime(anime.id)
+            )
+        }
+
+        return buildAnimeBackupJson(entries, exportedAt = now)
+    }
+
+    suspend fun importBackupJson(json: String, now: Long = System.currentTimeMillis()): Int {
+        val entries = parseAnimeBackupJson(json, importedAt = now)
+        val genreNames = entries
+            .flatMap { it.genreNames }
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .distinct()
+
+        animeDao.insertGenres(genreNames.map { name -> GenreEntity(name = name) })
+        val genresByName = animeDao.getAllGenres().associateBy { it.name }
+
+        animeDao.deleteAllAnime()
+
+        entries.forEach { entry ->
+            val animeId = animeDao.insert(entry.anime.copy(id = 0)).toInt()
+            val genreIds = entry.genreNames
+                .mapNotNull { genreName -> genresByName[genreName]?.id }
+                .toSet()
+
+            setGenresForAnime(animeId, genreIds)
+        }
+
+        return entries.size
+    }
 }
