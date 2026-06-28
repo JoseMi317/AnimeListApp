@@ -25,13 +25,7 @@ fun MangaScreenBackground(
             painter = painterResource(R.drawable.fondo_app),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            alpha = 0.18f,
             modifier = Modifier.fillMaxSize()
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MangaColors.Paper.copy(alpha = 0.70f))
         )
         content()
     }
