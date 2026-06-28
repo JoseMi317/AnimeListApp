@@ -51,6 +51,7 @@ import com.josemi.animediary.core.ui.MangaPanel
 import com.josemi.animediary.core.ui.MangaRatingQualifier
 import com.josemi.animediary.core.ui.MangaRatingQualifierVariant
 import com.josemi.animediary.core.ui.MangaScreenBackground
+import com.josemi.animediary.core.ui.MangaSectionFont
 import com.josemi.animediary.core.ui.MangaTitleFont
 import com.josemi.animediary.ui.theme.AnimeDiaryTheme
 import java.time.Instant
@@ -122,7 +123,7 @@ fun AnimeDetailScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            MangaPanel {
+            MangaPanel(contentPadding = PaddingValues(10.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -145,26 +146,18 @@ fun AnimeDetailScreen(
                             .height(220.dp),
                         verticalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text(
                                 text = anime.title,
                                 color = MangaColors.Ink,
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.headlineSmall,
                                 fontFamily = MangaTitleFont,
-                                fontWeight = FontWeight.Black
+                                fontWeight = FontWeight.Black,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
                             )
-                            Text(
-                                text = "Personal: ${anime.personalStatus.label}",
-                                color = MangaColors.Ink,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "Oficial: ${anime.releaseStatus.label}",
-                                color = MangaColors.SoftInk,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            StatusLine(label = "Personal", value = anime.personalStatus.label, selected = true)
+                            StatusLine(label = "Oficial", value = anime.releaseStatus.label, selected = false)
                         }
 
                         MangaButton(
@@ -177,23 +170,7 @@ fun AnimeDetailScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            MangaFieldTitle(text = "Estado")
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            MangaPanel {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    MangaChip(label = anime.personalStatus.label, selected = true, onClick = {})
-                    MangaChip(label = anime.releaseStatus.label, selected = false, onClick = {})
-                }
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MangaPanel(modifier = Modifier.weight(1f)) {
@@ -370,6 +347,35 @@ fun AnimeDetailScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun StatusLine(
+    label: String,
+    value: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = label.uppercase(),
+            color = MangaColors.SoftInk,
+            style = MaterialTheme.typography.labelSmall,
+            fontFamily = MangaSectionFont,
+            fontWeight = FontWeight.Black,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        MangaChip(
+            label = value,
+            selected = selected,
+            onClick = {},
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
